@@ -5,9 +5,13 @@ Fifo kolejka;
 
 int main()
 {
-  kolejka << 1;
-  kolejka << 2;
-  std::cout << kolejka << std::endl << kolejka << std::endl;
-
+  for (int i = 0; i < 130; i++)
+  {
+    kolejka >> i;
+  }
+  for (int i = 0; i < 140; i++)
+  {
+    std::cout << kolejka << std::endl;
+  }
   return 0;
 }
