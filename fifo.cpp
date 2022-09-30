@@ -17,7 +17,10 @@ bool operator>>(Fifo& ent, const int& input)
   else
   {
     // copy input into fifo
-    *(ent.first_empty) = input;
+    if (ent.first_empty < ent.container + ent.maxsize && ent.first_empty != nullptr)
+    {
+      *(ent.first_empty) = input;
+    }
     if (ent.current == nullptr)
     {
       ent.current = ent.first_empty;
@@ -27,9 +30,9 @@ bool operator>>(Fifo& ent, const int& input)
     {
       ent.first_empty++;
     }
-    else if (ent.current != ent.container)
+    else
     {
-      ent.first_empty = ent.container;
+      ent.first_empty = (ent.current != ent.container ? ent.container : nullptr);
     }
     return true;
   }
@@ -45,25 +48,21 @@ std::ostream& operator<<(std::ostream& os, Fifo& ent)
 
 const int Fifo::getFirst()
 {
-  if (this->current != nullptr && this->current != this->first_empty)
+  int result = 0;
+  // read value from current location
+  if (current < (container + maxsize) && current != nullptr)
   {
-    int result = 0x80;
-    if (this->current < (this->container + this->maxsize))
-    {
-      result = *(this->current);
-    }
-    if (this->current < (this->container + this->maxsize - 1))
-    {
-      this->current++;
-    }
-    else
-    {
-      this->current = this->container;
-    }
-    return result;
+    result = *(current);
   }
-  else
+  // if you can increment without exceeding, do that
+  if (current < (container + maxsize - 1))
   {
-    return 0;
+    current++;
   }
+  // if you exceed with incrementing, check what is the state of first_empty
+  else if (first_empty != nullptr)
+  {
+    current = container;
+  }
+  return result;
 }

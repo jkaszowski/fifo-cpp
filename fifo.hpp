@@ -17,8 +17,8 @@ class Fifo
 	private:
 		static const uint32_t maxsize = 128;
 		int container [maxsize] {0};
-		int* current = nullptr;
-		int* first_empty = container;
+		int* current;
+		int* first_empty;
 };
 
 #endif
