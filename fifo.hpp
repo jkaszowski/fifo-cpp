@@ -4,6 +4,11 @@
 #include <cstdint>
 #include <iostream>
 
+enum class State : uint8_t {
+	EMPTY,
+	NORMAL,
+	FULL   
+};
 
 class Fifo
 {
@@ -19,6 +24,11 @@ class Fifo
 		int container [maxsize] {0};
 		int* current;
 		int* first_empty;
+		bool isEmpty;
+		bool isFull;
+		uint32_t counter;
+		State state;
+		bool increment_pointer(int**);
 };
 
 #endif

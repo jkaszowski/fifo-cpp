@@ -4,35 +4,51 @@ Fifo::Fifo()
 {
   this->current     = nullptr;
   this->first_empty = container;
+  this->counter     = 0;
+  this->state       = State::EMPTY;
 }
 Fifo::~Fifo() {}
 
 bool operator>>(Fifo& ent, const int& input)
 {
-  if (ent.current == ent.first_empty)
+  switch (ent.state)
   {
-    // fifo is full
+  case State::FULL:
     return false;
-  }
-  else
-  {
-    // copy input into fifo
-    if (ent.first_empty < ent.container + ent.maxsize && ent.first_empty != nullptr)
+
+  case State::NORMAL:
+    if (ent.first_empty != nullptr)
     {
       *(ent.first_empty) = input;
     }
-    if (ent.current == nullptr)
+    ent.counter++;
+    if (ent.counter < ent.maxsize)
     {
-      ent.current = ent.first_empty;
-    }
-    // select next location
-    if (ent.first_empty < ent.container + ent.maxsize)
-    {
-      ent.first_empty++;
+      ent.increment_pointer(&ent.first_empty);
+      ent.state = State::NORMAL;
     }
     else
     {
-      ent.first_empty = (ent.current != ent.container ? ent.container : nullptr);
+      ent.first_empty = nullptr;
+      ent.state       = State::FULL;
+    }
+    return true;
+
+  case State::EMPTY:
+    if (ent.first_empty == nullptr)
+      ent.first_empty = ent.container;
+    *(ent.first_empty) = input;
+    ent.counter++;
+    ent.current = ent.first_empty;
+    if (ent.counter < ent.maxsize)
+    {
+      ent.increment_pointer(&ent.first_empty);
+      ent.state = State::NORMAL;
+    }
+    else
+    {
+      ent.first_empty = nullptr;
+      ent.state       = State::FULL;
     }
     return true;
   }
@@ -48,21 +64,52 @@ std::ostream& operator<<(std::ostream& os, Fifo& ent)
 
 const int Fifo::getFirst()
 {
-  int result = 0;
-  // read value from current location
-  if (current < (container + maxsize) && current != nullptr)
+  int result;
+  switch (state)
   {
-    result = *(current);
+  case State::NORMAL:
+    result = *(this->current);
+    counter--;
+    if (counter == 0)
+    {
+      state = State::EMPTY;
+    }
+    else
+    {
+      increment_pointer(&this->current);
+    }
+    return result;
+
+  case State::FULL:
+    result = *(this->current);
+    counter--;
+    if (counter == 0)
+    {
+      state = State::EMPTY;
+    }
+    else
+    {
+      increment_pointer(&this->current);
+      state = State::NORMAL;
+    }
+    return result;
+
+  case State::EMPTY:
+    return 123456;
+  default:
+    return 696969;
   }
-  // if you can increment without exceeding, do that
-  if (current < (container + maxsize - 1))
+}
+
+bool Fifo::increment_pointer(int** ptr)
+{
+  if (*ptr < this->container + this->maxsize - 1)
   {
-    current++;
+    (*ptr)++;
   }
-  // if you exceed with incrementing, check what is the state of first_empty
-  else if (first_empty != nullptr)
+  else
   {
-    current = container;
+    *ptr = container;
   }
-  return result;
+  return true;
 }
